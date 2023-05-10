@@ -17,23 +17,34 @@ def prepare_dataset():
 
     va_data = pd.read_csv("https://archive.ics.uci.edu/ml/machine-learning-databases/heart-disease/processed.va.data", header=None, names=['age', 'sex', 'cp', 'trestbps', 'chol', 'fbs', 'restecg', 'thalach', 'exang', 'oldpeak', 'slope', 'ca', 'thal', 'target'])
 
-    # Extract the features and target
-    features = cleveland_data.drop('target', axis=1)
-    target = cleveland_data['target']
+    # Concatenate all the datasets into one
+    all_data = pd.concat([cleveland_data, hungarian_data, switzerland_data, va_data], axis=0)
+    
+    all_data['target'] = all_data['target'].replace([1, 2, 3, 4], 1)
 
-    # replace any '?' with 0
+    # Extract the features and target
+    target = all_data['target']
+    features = all_data.drop('target', axis=1)
+
+    # Replace any '?' with 0
     features = features.replace('?', 0)
 
-    # convert to float
+    # Convert to float
     features = features.astype(float)
 
-    # replace NaN and infinite values with 0
+    # Replace NaN and infinite values with 0
     features = features.replace([np.inf, -np.inf, np.nan], 0)
 
-    # Normalize the features feature-wise using StandardScaler
-    scaler = StandardScaler()
-    features_norm = scaler.fit_transform(features)
+    # Split the data into training, validation, and testing sets
+    X_train, X_valtest, y_train, y_valtest = train_test_split(features, target, test_size=0.3)
+    X_val, X_test, y_val, y_test = train_test_split(X_valtest, y_valtest, test_size=0.5)
 
-    # Split the normalized data into training and testing sets
-    X_train, X_test, y_train, y_test = train_test_split(features_norm, target, test_size=0.2, random_state=42)
-    return X_train, X_test, y_train, y_test
+    # Normalize the features using StandardScaler based on training data only
+    scaler = StandardScaler()
+    X_train = scaler.fit_transform(X_train)
+    X_val = scaler.transform(X_val)
+    X_test = scaler.transform(X_test)
+
+
+
+    return X_train, X_val, X_test, y_train, y_val, y_test

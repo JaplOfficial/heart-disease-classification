@@ -1,0 +1,8 @@
+{
+  "num_runs": 30,
+  "input_size" = 13,
+  "hidden_size" = 20,
+  "output_size" = 1,
+  "pop_size" = 50,
+  "mutation_rate" = 0.01,
+}
